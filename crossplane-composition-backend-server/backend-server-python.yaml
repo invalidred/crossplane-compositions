@@ -1,0 +1,164 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: backend-server-python
+  labels:
+    lang: python
+spec:
+  compositeTypeRef:
+    apiVersion: my-domain.org/v1alpha1
+    kind: XBackendServer
+  resources:
+    - name: BackenServerConfigMap
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        metadata:
+          name: server-config-map
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: "to-be-patched"
+              data:
+                hi: 'to-be-patched'
+          providerConfigRef:
+            name: provider-kubernetes
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.namespace"
+          toFieldPath: "spec.forProvider.manifest.metadata.namespace"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.name"
+          toFieldPath: "spec.forProvider.manifest.metadata.name"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.config"
+          toFieldPath: "spec.forProvider.manifest.data"
+    - name: BackendServerDeployment
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        metadata:
+          name: server-deployment
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: to-be-patched
+                namespace: to-be-patched
+              spec:
+                replicas: to-be-patched
+                selector:
+                  matchLabels:
+                    app: to-be-patched
+                template:
+                  metadata:
+                    name: to-be-patched
+                    labels:
+                      app: to-be-patched
+                      app.kubernetes.io/name: to-be-patched
+                      app.kubernetes.io/version: to-be-patched
+                  spec:
+                    terminationGracePeriodSeconds: 30
+                    containers:
+                      - name: echoserver
+                        image: to-be-patched
+                        imagePullPolicy: IfNotPresent
+                        securityContext:
+                          allowPrivilegeEscalation: false
+                          readOnlyRootFilesystem: true
+                          runAsNonRoot: true
+                          seccompProfile:
+                            type: RuntimeDefault
+                          capabilities:
+                            drop: ["ALL"]
+                        ports:
+                          - containerPort: to-be-patched
+                        resources:
+                          requests:
+                            cpu: to-be-patched
+                            memory: to-be-patched
+                          limits:
+                            memory: to-be-patched
+                        startupProbe:
+                          httpGet:
+                            path: /status
+                            port: to-be-patched
+                          failureThreshold: 30
+                          periodSeconds: 2
+                        readinessProbe:
+                          httpGet:
+                            path: /status
+                            port: to-be-patched
+                          periodSeconds: 10
+                          successThreshold: 1
+                          failureThreshold: 2
+                        livenessProbe:
+                          httpGet:
+                            path: /status
+                            port: to-be-patched
+                          periodSeconds: 30
+                          successThreshold: 1
+                          failureThreshold: 2
+          providerConfigRef:
+            name: provider-kubernetes
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.namespace"
+          toFieldPath: "spec.forProvider.manifest.metadata.namespace"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.name"
+          toFieldPath: "spec.forProvider.manifest.metadata.name"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.replicas"
+          toFieldPath: "spec.forProvider.manifest.spec.replicas"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.name"
+          toFieldPath: "spec.forProvider.manifest.spec.selector.matchLabels.app"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.name"
+          toFieldPath: "spec.forProvider.manifest.spec.template.metadata.name"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.name"
+          toFieldPath: "spec.forProvider.manifest.spec.template.metadata.labels.app"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.name"
+          toFieldPath: spec.forProvider.manifest.spec.template.metadata.labels["app.kubernetes.io/name"]
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.version"
+          toFieldPath: spec.forProvider.manifest.spec.template.metadata.labels["app.kubernetes.io/version"]
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.image
+              - fromFieldPath: spec.version
+            strategy: string
+            string:
+              fmt: "%s:%s"
+          toFieldPath: "spec.forProvider.manifest.spec.template.spec.containers[0].image"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.port"
+          toFieldPath: "spec.forProvider.manifest.spec.template.spec.containers[0].ports[0].containerPort"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.resources.cpu"
+          toFieldPath: "spec.forProvider.manifest.spec.template.spec.containers[0].resources.requests.cpu"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.resources.memory"
+          toFieldPath: "spec.forProvider.manifest.spec.template.spec.containers[0].resources.requests.memory"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.resources.memory"
+          toFieldPath: "spec.forProvider.manifest.spec.template.spec.containers[0].resources.limits.memory"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.port"
+          toFieldPath: "spec.forProvider.manifest.spec.template.spec.containers[0].startupProbe.httpGet.port"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.port"
+          toFieldPath: "spec.forProvider.manifest.spec.template.spec.containers[0].readinessProbe.httpGet.port"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.port"
+          toFieldPath: "spec.forProvider.manifest.spec.template.spec.containers[0].livenessProbe.httpGet.port"

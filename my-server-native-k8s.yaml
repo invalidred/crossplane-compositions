@@ -1,0 +1,75 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: eng
+  labels:
+    name: eng
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: my-server
+  namespace: eng
+data:
+  APOLLO_SERVER_PLAYGROUND_ENABLED: "true"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-server
+  namespace: eng
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-server
+  template:
+    metadata:
+      name: my-server
+      labels:
+        app: my-server
+        app.kubernetes.io/name: my-server
+        app.kubernetes.io/version: 1.0.0
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: echoserver
+          image: mendhak/http-https-echo:30
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 10m
+              memory: 50Mi
+            limits:
+              memory: 100Mi
+          startupProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 2
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8080
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 2

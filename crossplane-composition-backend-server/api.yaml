@@ -1,0 +1,61 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xbackendservers.my-domain.org
+spec:
+  group: my-domain.org
+  names:
+    kind: XBackendServer
+    plural: xbackendservers
+  claimNames:
+    kind: BackendServer
+    plural: backendservers
+  versions:
+    - name: v1alpha1
+      referenceable: true
+      served: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                name:
+                  type: string
+                namespace:
+                  type: string
+                image:
+                  type: string
+                version:
+                  type: string
+                replicas:
+                  type: number
+                port:
+                  type: number
+                resources:
+                  type: object
+                  properties:
+                    cpu:
+                      type: string
+                    memory:
+                      type: string
+                  required:
+                    - cpu
+                    - memory
+                config:
+                  type: object
+                  properties:
+                    foo:
+                      type: string
+                    bar:
+                      type: string
+              required:
+                - image
+                - version
+                - name
+                - namespace
+                - replicas
+                - port
+                - resources

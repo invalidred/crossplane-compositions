@@ -1,0 +1,21 @@
+---
+apiVersion: my-domain.org/v1alpha1
+kind: BackendServer
+metadata:
+  name: abdul-server-noice
+spec:
+  compositionSelector:
+    matchLabels:
+      lang: nodejs
+  name: abdul-server-v1
+  namespace: eng
+  image: mendhak/http-https-echo
+  version: "30"
+  replicas: 3
+  resources:
+    cpu: 100m
+    memory: 100Mi
+  port: 8080
+  config:
+    foo: "bar-server"
+    bar: "pig-server-abdul"
